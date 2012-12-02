@@ -1722,8 +1722,8 @@ class Move(object):
         capture = ""
         if self.is_capture():
             if piece.type == PAWN:
-                if len(from_coord):
-                    capture = 'x'
+                from_coord+= pos[0]
+                capture = 'x'
             else:
                 capture = 'x'
 
@@ -1745,6 +1745,23 @@ class Move(object):
 
         return san
 
+class GamesLines(object):
+    """ Contains all games of a pgn file (@todo merge with next)"""
+
+    def __init__(self):
+        self.games = []
+
+    def import_pgn(self, pgn_file):
+
+        # Split games
+        count=0
+        for line in pgn_file:
+            count=count+1
+            game = Game()
+            game.import_pgn([line])
+            self.games.append(game)
+
+        print "{0} game{1} loaded".format(len(self.games), "s"[1==len(self.games):])
 
 class Games(object):
     """ Contains all games of a pgn file """
@@ -1814,37 +1831,6 @@ class Game(object):
 
 
     def import_pgn(self, pgn_file, parse_movetext=True):
-
-        # Read tags
-        c=0
-        for line in pgn_file:
-            line = line.strip()
-
-            match = Game.tag_re.match(line)
-
-            if match is None:
-                break
-
-            tag_tokens = Game.tag_re.match(line).groups()
-
-            if len(tag_tokens) >= 2:
-
-                tag_name = tag_tokens[0].strip()
-                tag_value = tag_tokens[1].strip('"')
-
-                print tag_name, tag_value
-
-                self.tags[tag_name] = tag_value
-
-            c = c+1
-
-        if isinstance(pgn_file, list):
-            del pgn_file[0:c]
-
-        if not len(self.tags):
-            return False
-
-        found_movetext = False
 
         mt = []
 
